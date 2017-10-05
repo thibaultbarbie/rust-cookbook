@@ -1,0 +1,237 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Build Time Tooling - Rust Cookbook</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="Collection of useful Rust code examples">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme -->
+        
+        <link rel="stylesheet" href="theme/custom.css">
+        
+
+        
+
+        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
+        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
+        <script>
+            if (typeof Clipboard == 'undefined') {
+                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
+            }
+        </script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+
+        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
+        <script src="store.js"></script>
+
+        <!-- Custom JS script -->
+        
+
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = store.get('theme');
+            if (theme === null || theme === undefined) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = store.get('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li class="affix"><a href="intro.html">Table of Contents</a></li><li class="affix"><a href="about.html">About</a></li><li><a href="basics.html"><strong>1.</strong> Basics</a></li><li><a href="encoding.html"><strong>2.</strong> Encoding</a></li><li><a href="concurrency.html"><strong>3.</strong> Concurrency</a></li><li><a href="net.html"><strong>4.</strong> Networking</a></li><li><a href="app.html"><strong>5.</strong> Application development</a></li><li><a href="logging.html"><strong>6.</strong> Logging</a></li><li><a href="build_tools.html" class="active"><strong>7.</strong> Build Time Tooling</a></li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page" tabindex="-1">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <!-- START - Rust Cookbook customization -->
+                        <i id="edit-button" class="fa fa-edit">Edit</i>
+                        <!-- END - Rust Cookbook customization -->
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title">Rust Cookbook</h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <a class="header" href="build_tools.html#build-time-tooling" id="build-time-tooling"><h1>Build Time Tooling</h1></a>
+<p>This section covers &quot;build-time&quot; tooling, or code that is run prior to compiling a crate's source code.
+Conventionally, build-time code lives in a <strong>build.rs</strong> file and is commonly referred to as a &quot;build script&quot;.
+Common use cases include rust code generation and compilation of bundled C/C++/asm code.
+See crates.io's <a href="http://doc.crates.io/build-script.html">documentation on the matter</a> for more information.</p>
+<table><thead><tr><th> Recipe </th><th> Crates </th><th> Categories </th></tr></thead><tbody>
+<tr><td> <a href="build_tools.html#ex-cc-static-bundled">Compile and link statically to a bundled C library</a> </td><td> <a href="https://docs.rs/cc"><img src="https://badge-cache.kominick.com/crates/v/cc.svg?label=cc" alt="cc-badge" /></a> </td><td> <a href="https://crates.io/categories/development-tools"><img src="https://badge-cache.kominick.com/badge/development_tools--x.svg?style=social" alt="cat-development-tools-badge" /></a> </td></tr>
+</tbody></table>
+<p><a name="ex-cc-static-bundled"></a></p>
+<a class="header" href="build_tools.html#compile-and-link-statically-to-a-bundled-c-library" id="compile-and-link-statically-to-a-bundled-c-library"><h2>Compile and link statically to a bundled C library</h2></a>
+<p><a href="https://docs.rs/cc"><img src="https://badge-cache.kominick.com/crates/v/cc.svg?label=cc" alt="cc-badge" /></a> <a href="https://crates.io/categories/development-tools"><img src="https://badge-cache.kominick.com/badge/development_tools--x.svg?style=social" alt="cat-development-tools-badge" /></a></p>
+<p>To accommodate scenarios where additional C, C++, or assembly is required in a project, the <a href="https://docs.rs/cc"><strong>cc</strong></a> crate
+offers a simple api for compiling bundled C/C++/asm code into static libraries (<strong>.a</strong>) that can be statically linked to by <strong>rustc</strong>.</p>
+<p>The following example has some bundled C code (<strong>src/hello.c</strong>) that will be used from rust.
+Before compiling our rust source code, the &quot;build&quot; file (<strong>build.rs</strong>) specified in <strong>Cargo.toml</strong> will run.
+Using the <a href="https://docs.rs/cc"><strong>cc</strong></a> crate, a static library file will be produced (in this case, <strong>libhello.a</strong>, see
+<a href="https://docs.rs/cc/*/cc/struct.Build.html#method.compile"><code>compile</code> docs</a>) which can then be used from rust by declaring the external function signatures in an <code>extern</code> block.</p>
+<p>Since the bundled C is very simple, only a single source file needs to be passed to <a href="https://docs.rs/cc/*/cc/struct.Build.html"><code>cc::Build</code></a>.
+For more complex build requirements, <a href="https://docs.rs/cc/*/cc/struct.Build.html"><code>cc::Build</code></a> offers a full suite of builder methods for specifying
+<a href="https://docs.rs/cc/*/cc/struct.Build.html#method.include"><code>include</code></a> paths and extra compiler <a href="https://docs.rs/cc/*/cc/struct.Build.html#method.flag"><code>flag</code></a>s.</p>
+<a class="header" href="build_tools.html#cargotoml" id="cargotoml"><h3><code>Cargo.toml</code></h3></a>
+<pre><code class="language-toml">[package]
+...
+build = &quot;build.rs&quot;
+
+[build-dependencies]
+cc = &quot;1&quot;
+
+[dependencies]
+error-chain = &quot;0.11&quot;
+</code></pre>
+<a class="header" href="build_tools.html#buildrs" id="buildrs"><h3><code>build.rs</code></h3></a>
+<pre><pre class="playpen"><code class="language-rust no_run">extern crate cc;
+
+fn main() {
+    cc::Build::new()
+        .file(&quot;src/hello.c&quot;)
+        .compile(&quot;hello&quot;);   // outputs `libhello.a`
+}
+</code></pre></pre>
+<a class="header" href="build_tools.html#srchelloc" id="srchelloc"><h3><code>src/hello.c</code></h3></a>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+
+void hello() {
+    printf(&quot;Hello from C!\n&quot;);
+}
+
+void greet(const char* name) {
+    printf(&quot;Hello, %s!\n&quot;, name);
+}
+</code></pre>
+<a class="header" href="build_tools.html#srcmainrs" id="srcmainrs"><h3><code>src/main.rs</code></h3></a>
+<pre><code class="language-rust ignore"># #[macro_use] extern crate error_chain;
+use std::ffi::CString;
+use std::os::raw::c_char;
+#
+# error_chain! {
+#     foreign_links {
+#         NulError(::std::ffi::NulError);
+#         Io(::std::io::Error);
+#     }
+# }
+#
+# fn prompt(s: &amp;str) -&gt; Result&lt;String&gt; {
+#     use std::io::Write;
+#     print!(&quot;{}&quot;, s);
+#     std::io::stdout().flush()?;
+#     let mut input = String::new();
+#     std::io::stdin().read_line(&amp;mut input)?;
+#     Ok(input.trim().to_string())
+# }
+
+extern {
+    fn hello();
+    fn greet(name: *const c_char);
+}
+
+fn run() -&gt; Result&lt;()&gt; {
+    unsafe { hello() }
+    let name = prompt(&quot;What's your name? &quot;)?;
+    let c_name = CString::new(name)?;
+    unsafe { greet(c_name.as_ptr()) }
+    Ok(())
+}
+#
+# quick_main!(run);
+</code></pre>
+<!--
+Links, in a few categories. Follow the existing structure.
+Keep lines sorted.
+-->
+<!-- Categories -->
+<!-- Crates -->
+<!-- Other Reference -->
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a rel="prev" href="logging.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+
+            </div>
+
+            
+                <a href="logging.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+
+            // START - Rust Cookbook customization
+            $("#edit-button").click(function(){
+                var editWindow = window.open("https://github.com/rust-lang-nursery/rust-cookbook/edit/master/src/build_tools.md");
+            });
+            // END - Rust Cookbook customization
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        
+
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>
